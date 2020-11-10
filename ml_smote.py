@@ -23,7 +23,7 @@ def as_np_array(fn):
     @wraps(as_np_array)
     def wrapper(*args, **kwargs):
         result = fn(*args, **kwargs)
-        if isinstance(result, cupy.array):
+        if isinstance(result, cupy.ndarray):
             result = result.get()
         return result
     return wrapper
