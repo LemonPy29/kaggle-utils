@@ -33,7 +33,7 @@ def values(x):
     return x.values
 
 class MLSMOTE:
-    def __init__(self, *, backend='cuda', seed, **nn_args):
+    def __init__(self, *, backend='cuda', seed=123, **nn_args):
         if backend == 'cuda':
             self.db = cudf
             self.cb = cuml
