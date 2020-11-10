@@ -44,7 +44,7 @@ class MLSMOTE:
         self.seed = seed
 
     def nn_wrapper(self, X):
-        nn = self.cb.NearesetNeighbors(**self.nn_args)
+        nn = self.cb.neighbors.NearesetNeighbors(**self.nn_args)
         nn.fit(X)
         _, idxs = nn.kneighbors(X)
         return idxs
