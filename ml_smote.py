@@ -58,8 +58,8 @@ class MLSMOTE:
         
         for i in range(n_samples):
             np.random.seed(i + self.seed)
-            sample_idx = np.choice(idxs[:, 1])
-            nbs_idx = np.choice(idxs[sample_idx, 1:])
+            sample_idx = np.random.choice(idxs[:, 1])
+            nbs_idx = np.random.choice(idxs[sample_idx, 1:])
             ser = y.loc[idxs[sample_idx]].sum(axis=0)
             ynew = y_res.append(ser.mask(ser > 2, 1, 0))
             xnew = inbetween_sample(X_masked.loc[sample_idx],
