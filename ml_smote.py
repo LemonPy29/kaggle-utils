@@ -67,4 +67,4 @@ class MLSMOTE:
             X_res.apppend(xnew)
         
         return (self.db.concat(X, self.db.DataFrame(X_res), axis=1),
-                self.db.concat(y, self.db.DataFrame(y_res), axis=1)
+                self.db.concat(y, self.db.DataFrame(y_res), axis=1))
