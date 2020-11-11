@@ -7,10 +7,8 @@ import cuml
 from functools import wraps
 
 
-def tail_mask(y, minority_class=1):
-    irpl = np.zeros(len(y.columns))
-    for i, col in enumerate(y.columns):
-        irpl[i] = y[col].value_counts()[minority_class]
+def tail_mask(y):
+    irpl = y.sum(axis=0)
     irpl = irpl.max() / irpl
     mir = irpl.mean()
     return y[y.columns[(irpl > mir)]].any(axis=1) == 1
@@ -33,7 +31,7 @@ def values(x):
     return x.values
 
 
-class MLSMOTE:
+class MLSmote:
     def __init__(self, *, backend='cuda', seed=123, **nn_args):
         if backend == 'cuda':
             self.dfb = cudf
@@ -61,18 +59,19 @@ class MLSMOTE:
     def resample(self, X, y, n_samples):
         np.random.seed(self.seed)
         mask = tail_mask(y)
-        X_masked = X[mask].reset_index(drop=True)
-        y_masked = y[mask].reset_index(drop=True)
+        X_masked = X[mask].values
+        y_masked = y[mask].values
         idxs = values(self.nn_wrapper(X_masked))
         
         sample_idx = np.random.choice(idxs[:, 0], n_samples)
         nbs_idx = [np.random.choice(idxs[j, 1:]) for j in sample_idx]
-        nn_sum = self.nn_sum(y_masked.values, idxs[sample_idx])
+        nn_sum = self.nn_sum(y, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
             self.arrayb.where(nn_sum > 2, 1, 0),
             columns=y.columns
             )
-        X_res = inbetween_sample(X_masked.loc[sample_idx],
-                                X_masked.loc[nbs_idx])
+        X_res = inbetween_sample(X_masked[sample_idx],
+                                 X_masked[cupy.array(nbs_idx)])
+        X_res = self.dfb.DataFrame(X_res, columns=X.columns)
         
         return self.dfb.concat([X, X_res], axis=0), self.dfb.concat([y, y_res], axis=0)
