@@ -50,21 +50,17 @@ class MLSMOTE:
         return idxs
 
     def resample(self, X, y, n_samples):
+        np.random.seed(self.seed)
         mask = tail_mask(y)
         X_masked = X[mask].reset_index(drop=True)
         y_masked = y[mask].reset_index(drop=True)
         idxs = values(self.nn_wrapper(X_masked))
-        X_res, y_res = [], []
         
-        for i in range(n_samples):
-            np.random.seed(i + self.seed)
-            sample_idx = np.random.choice(idxs[:, 1])
-            nbs_idx = np.random.choice(idxs[sample_idx, 1:])
-            ser = y.loc[idxs[sample_idx]].sum(axis=0)
-            ynew = y_res.append(ser.mask(ser > 2, 1, 0))
-            xnew = inbetween_sample(X_masked.loc[sample_idx],
-                                    X_masked.loc[nbs_idx])
-            X_res.append(xnew)
+        sample_idx = np.random.choice(idxs[:, 0], n_samples)
+        nbs_idx = [np.random.choice(idxs[j, 1:]) for j in sampled_idx]
+        sum_nn = y.loc[idxs[sample_idx]].sum(axis=0)
+        y_res = sum_nn.mask(sum_nn > 2, 1, 0)
+        X_res = inbetween_sample(X_masked.loc[sample_idx],
+                                X_masked.loc[nbs_idx])
         
-        return (self.db.concat([X, self.db.DataFrame(X_res)], axis=0),
-                self.db.concat([y, self.db.DataFrame(y_res)], axis=0))
+        return self.db.concat([X, X_res], axis=0), self.db.concat([y, y_res], axis=0)
