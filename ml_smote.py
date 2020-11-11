@@ -66,5 +66,5 @@ class MLSMOTE:
                                     X_masked.loc[nbs_idx])
             X_res.append(xnew)
         
-        return (self.db.concat([X, self.db.DataFrame(X_res)], axis=1),
-                self.db.concat([y, self.db.DataFrame(y_res)], axis=1))
+        return (self.db.concat([X, self.db.DataFrame(X_res)], axis=0),
+                self.db.concat([y, self.db.DataFrame(y_res)], axis=0))
