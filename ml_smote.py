@@ -64,7 +64,7 @@ class MLSMOTE:
             ynew = y_res.append(ser.mask(ser > 2, 1, 0))
             xnew = inbetween_sample(X_masked.loc[sample_idx],
                                     X_masked.loc[nbs_idx])
-            X_res.apppend(xnew)
+            X_res.append(xnew)
         
         return (self.db.concat(X, self.db.DataFrame(X_res), axis=1),
                 self.db.concat(y, self.db.DataFrame(y_res), axis=1))
