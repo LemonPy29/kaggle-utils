@@ -69,7 +69,7 @@ class MLSMOTE:
         nbs_idx = [np.random.choice(idxs[j, 1:]) for j in sample_idx]
         nn_sum = self.nn_sum(y_masked.values, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
-            self.arrayb.where(nn_sum >= 1, 1, 0),
+            self.arrayb.where(nn_sum > 2, 1, 0),
             columns=y.columns
             )
         X_res = inbetween_sample(X_masked.loc[sample_idx],
