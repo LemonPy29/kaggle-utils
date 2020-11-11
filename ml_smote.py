@@ -53,7 +53,7 @@ class MLSMOTE:
         return idxs
 
     def nn_sum(self, y, all_nbs):
-        res = self.arrayb.zeros((len(all_nbs))
+        res = self.arrayb.zeros((len(all_nbs)))
         for i, nbs in enumerate(all_nbs):
             res[i] = y[nbs].sum(axis=0)
         return res
