@@ -75,4 +75,5 @@ class MLSmote:
                                  X_masked[nbs_idx])
         X_res = self.dfb.DataFrame(X_res, columns=X.columns)
         
-        return self.dfb.concat([X, X_res], axis=0), self.dfb.concat([y, y_res], axis=0)
+        return (self.dfb.concat([X, X_res], axis=0, ignore_index=True),
+                self.dfb.concat([y, y_res], axis=0, ignore_index=True))
