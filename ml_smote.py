@@ -66,7 +66,7 @@ class MLSmote:
         
         sample_idx = np.random.choice(idxs[:, 0], n_samples)
         nbs_idx = self.arrayb.array([np.random.choice(idxs[j, 1:]) for j in sample_idx])
-        nn_sum = self.nn_sum(y, idxs[sample_idx])
+        nn_sum = self.nn_sum(y_masked, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
             self.arrayb.where(nn_sum > 2, 1, 0),
             columns=y.columns
