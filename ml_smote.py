@@ -11,7 +11,7 @@ def tail_mask(y):
     irpl = y.sum(axis=0)
     irpl = irpl.max() / irpl
     mir = irpl.mean()
-    return y[y.columns[(irpl > mir)]].any(axis=1) == 1
+    return y[y.columns[values(irpl > mir)]].any(axis=1) == 1
 
 def inbetween_sample(p1, p2):
     nu = np.random.uniform(0, 1)
