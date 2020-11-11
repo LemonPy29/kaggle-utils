@@ -44,6 +44,7 @@ class MLSmote:
         self.nn_args = nn_args
         self.seed = seed
 
+    @as_np_array
     def nn_wrapper(self, X):
         nn = self.mlb.neighbors.NearestNeighbors(**self.nn_args)
         nn.fit(X)
@@ -61,17 +62,17 @@ class MLSmote:
         mask = tail_mask(y)
         X_masked = X[mask].values
         y_masked = y[mask].values
-        idxs = values(self.nn_wrapper(X_masked))
+        idxs = self.nn_wrapper(X_masked)
         
         sample_idx = np.random.choice(idxs[:, 0], n_samples)
-        nbs_idx = [np.random.choice(idxs[j, 1:]) for j in sample_idx]
+        nbs_idx = self.arrayb.array([np.random.choice(idxs[j, 1:]) for j in sample_idx])
         nn_sum = self.nn_sum(y, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
             self.arrayb.where(nn_sum > 2, 1, 0),
             columns=y.columns
             )
         X_res = inbetween_sample(X_masked[sample_idx],
-                                 X_masked[cupy.array(nbs_idx)])
+                                 X_masked[nbs_idx])
         X_res = self.dfb.DataFrame(X_res, columns=X.columns)
         
         return self.dfb.concat([X, X_res], axis=0), self.dfb.concat([y, y_res], axis=0)
