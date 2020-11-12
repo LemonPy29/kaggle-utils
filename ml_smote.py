@@ -58,20 +58,14 @@ class MLSmote:
             res[i] = y[nbs].sum(axis=0)
         return res
 
-    def _resample_features(self, X, sample_idx, nbs_idx, categorical):
-        if not categorical: 
-            categorical = []
-        X_num = X.drop(categorical, axis=1).values
-        cat_values = values(X[categorical])
-        nu = np.random.uniform(0, 1, len(sample_idx))
-        X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx], nu)
-        cat_values = self.arrayb.array(
-                np.where(nu < .5, 
-                         cat_values[sample_idx],
-                         cat_values[nbs_idx])     
-                )
-        
-        X_res = self.arrayb.concatenate(cat_values, X_res, axis=1)
+    def _resample_features(self, X_num, X_cat, sample_idx, nbs_idx):
+        nu = np.random.uniform(0, 1, len(sample_idx)).reshape(-1, 1)
+        X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx], 
+                            self.arrayb(nu))
+        cat_values = np.where(nu < .5, cat_values[sample_idx],
+                              cat_values[nbs_idx]))
+        cat_values = self.dfb.DataFrame(cat_values.tolist())
+        X_res = self.dfb.concatenate([cat_values, X_res], axis=1)
         return pd.DataFrame(X_res, columns=X.columns)
 
     def resample(self, X, y, n_samples, categorical=None):
@@ -79,12 +73,19 @@ class MLSmote:
         mask = tail_mask(y)
         X_masked = X[mask]
         y_masked = y[mask]
-        idxs = self.nn_wrapper(X_masked)
-        sample_idx = np.random.choice(idxs[:, 0], n_samples)
-        nbs_idx = self.arrayb.array([np.random.choice(idxs[j, 1:]) for j in sample_idx])
 
-        X_res = _resample_features(X_masked, sample_idx, nbs_idx,
-                                   categorical=categorical)
+        if not categorical: 
+            categorical = []
+        X_num = X.drop(categorical, axis=1).values
+        X_cat = values(X[categorical])
+
+        idxs = self.nn_wrapper(X_num)
+        sample_idx = np.random.choice(idxs[:, 0], n_samples)
+        nbs_idx = np.array(
+                [np.random.choice(idxs[j, 1:]) for j in sample_idx]
+                )
+
+        X_res = self._resample_features(X_num, X_cat, sample_idx, nbs_idx)
 
         nn_sum = self.nn_sum(y_masked, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
