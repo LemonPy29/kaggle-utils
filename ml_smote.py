@@ -13,9 +13,8 @@ def tail_mask(y):
     mir = irpl.mean()
     return y[y.columns[values(irpl > mir)]].any(axis=1) == 1
 
-def inbetween_sample(p1, p2):
-    nu = np.random.uniform(0, 1)
-    return p1 + nu * (p1 - p2)
+def convex_comb(p1, p2, nu):
+    return p1 + nu * (p2 - p1)
 
 def as_np_array(fn):
     @wraps(as_np_array)
@@ -28,8 +27,10 @@ def as_np_array(fn):
 
 @as_np_array
 def values(x):
-    return x.values
-
+    try:
+        return x.values
+    except NotImplementedError:
+        return x.values_host
 
 class MLSmote:
     def __init__(self, *, backend='cuda', seed=123, **nn_args):
@@ -57,23 +58,38 @@ class MLSmote:
             res[i] = y[nbs].sum(axis=0)
         return res
 
-    def resample(self, X, y, n_samples):
+    def _resample_features(self, X, sample_idx, nbs_idx, categorical):
+        if not categorical: 
+            categorical = []
+        X_num = X.drop(categorical, axis=1).values
+        cat_values = values(X[categorical])
+        nu = np.random.uniform(0, 1, len(sample_idx))
+        X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx]), nu)
+        cat_values = self.arrayb.array(
+                np.where(nu < .5, 
+                         cat_values[sample_idx],
+                         cat_values[nbs_idx])     
+                )
+        
+        X_res = self.arrayb.concatenate(cat_values, X_res, axis=1)
+        return pd.DataFrame(X_res, columns=X.columns)
+
+    def resample(self, X, y, n_samples, categorical=None):
         np.random.seed(self.seed)
         mask = tail_mask(y)
-        X_masked = X[mask].values
-        y_masked = y[mask].values
+        X_masked = X[mask]
+        y_masked = y[mask]
         idxs = self.nn_wrapper(X_masked)
-        
         sample_idx = np.random.choice(idxs[:, 0], n_samples)
         nbs_idx = self.arrayb.array([np.random.choice(idxs[j, 1:]) for j in sample_idx])
+
+        X_res = _resample_features(X_masked, sample_idx, nbs_idx,
+                                   categorical=categorical)
+
         nn_sum = self.nn_sum(y_masked, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
             self.arrayb.where(nn_sum > 2, 1, 0),
             columns=y.columns
             )
-        X_res = inbetween_sample(X_masked[sample_idx],
-                                 X_masked[nbs_idx])
-        X_res = self.dfb.DataFrame(X_res, columns=X.columns)
-        
-        return (self.dfb.concat([X, X_res], axis=0, ignore_index=True),
-                self.dfb.concat([y, y_res], axis=0, ignore_index=True))
+
+        return X_res, y_res
