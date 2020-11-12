@@ -29,7 +29,7 @@ def as_np_array(fn):
 def values(x):
     try:
         return x.values
-    except NotImplementedError:
+    except TypeError:
         return x.values_host
 
 class MLSmote:
