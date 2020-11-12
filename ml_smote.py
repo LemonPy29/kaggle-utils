@@ -64,7 +64,7 @@ class MLSmote:
         X_num = X.drop(categorical, axis=1).values
         cat_values = values(X[categorical])
         nu = np.random.uniform(0, 1, len(sample_idx))
-        X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx]), nu)
+        X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx], nu)
         cat_values = self.arrayb.array(
                 np.where(nu < .5, 
                          cat_values[sample_idx],
