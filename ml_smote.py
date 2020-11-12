@@ -76,8 +76,8 @@ class MLSmote:
 
         if not categorical: 
             categorical = []
-        X_num = X.drop(categorical, axis=1).values
-        X_cat = values(X[categorical])
+        X_num = X_masked.drop(categorical, axis=1).values
+        X_cat = values(X_masked[categorical])
 
         idxs = self.nn_wrapper(X_num)
         sample_idx = np.random.choice(idxs[:, 0], n_samples)
