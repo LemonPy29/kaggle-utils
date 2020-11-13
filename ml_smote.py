@@ -59,15 +59,22 @@ class MLSmote:
         return res
 
     def _resample_features(self, X_num, X_cat, sample_idx, nbs_idx):
+        num_cols, cat_cols = X_num.columns, X_cat.columns
+        num_values = X_num.values
+        cat_values = values(X_cat)
+
         nu = np.random.uniform(0, 1, len(sample_idx)).reshape(-1, 1)
-        X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx], 
+        X_res = convex_comb(num_values[sample_idx], num_values[nbs_idx], 
                             self.arrayb.array(nu))
         X_res = self.dfb.DataFrame(X_res)
-        cat_values = np.where(nu < .5, X_cat[sample_idx],
-                              X_cat[nbs_idx])
-        cat_values = self.dfb.DataFrame(cat_values.tolist())
-        X_res = self.dfb.concat([cat_values, X_res], axis=1)
-        return X_res
+        cat_values = np.where(nu < .5, cat_values[sample_idx],
+                              cat_values[nbs_idx])
+
+        X_res = self.dfb.DataFrame(X_res, columns=num_cols)
+        cat_df = self.dfb.DataFrame(cat_values.tolist(), 
+                                    columns=cat_cols)
+
+        return self.dfb.concat([cat_values, X_res], axis=1)
 
     def resample(self, X, y, n_samples, categorical=None):
         np.random.seed(self.seed)
@@ -77,19 +84,18 @@ class MLSmote:
 
         if not categorical: 
             categorical = []
-        X_num = X_masked.drop(categorical, axis=1).values
-        X_cat = values(X_masked[categorical])
+        X_num = X_masked.drop(categorical, axis=1)
+        X_cat = X_masked[categorical]
 
-        idxs = self.nn_wrapper(X_num)
+        idxs = self.nn_wrapper(X_num,values)
         sample_idx = np.random.choice(idxs[:, 0], n_samples)
         nbs_idx = np.array(
                 [np.random.choice(idxs[j, 1:]) for j in sample_idx]
                 )
 
         X_res = self._resample_features(X_num, X_cat, sample_idx, nbs_idx)
-        X_res.columns = X.columns
 
-        nn_sum = self.nn_sum(y_masked, idxs[sample_idx])
+        nn_sum = self.nn_sum(y_masked.values, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
             self.arrayb.where(nn_sum > 2, 1, 0),
             columns=y.columns
