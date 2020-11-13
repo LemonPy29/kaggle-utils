@@ -61,7 +61,7 @@ class MLSmote:
     def _resample_features(self, X_num, X_cat, sample_idx, nbs_idx):
         nu = np.random.uniform(0, 1, len(sample_idx)).reshape(-1, 1)
         X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx], 
-                            self.arrayb(nu))
+                            self.arrayb.array(nu))
         cat_values = np.where(nu < .5, cat_values[sample_idx],
                               cat_values[nbs_idx])
         cat_values = self.dfb.DataFrame(cat_values.tolist())
