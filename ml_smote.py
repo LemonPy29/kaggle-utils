@@ -62,11 +62,12 @@ class MLSmote:
         nu = np.random.uniform(0, 1, len(sample_idx)).reshape(-1, 1)
         X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx], 
                             self.arrayb.array(nu))
+        X_res = self.dfb(X_res)
         cat_values = np.where(nu < .5, X_cat[sample_idx],
                               X_cat[nbs_idx])
         cat_values = self.dfb.DataFrame(cat_values.tolist())
         X_res = self.dfb.concat([cat_values, X_res], axis=1)
-        return pd.DataFrame(X_res, columns=X.columns)
+        return X_res
 
     def resample(self, X, y, n_samples, categorical=None):
         np.random.seed(self.seed)
@@ -86,6 +87,7 @@ class MLSmote:
                 )
 
         X_res = self._resample_features(X_num, X_cat, sample_idx, nbs_idx)
+        X_res.columns = X.columns
 
         nn_sum = self.nn_sum(y_masked, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
