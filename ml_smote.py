@@ -65,7 +65,7 @@ class MLSmote:
         cat_values = np.where(nu < .5, X_cat[sample_idx],
                               X_cat[nbs_idx])
         cat_values = self.dfb.DataFrame(cat_values.tolist())
-        X_res = self.dfb.concatenate([cat_values, X_res], axis=1)
+        X_res = self.dfb.concat([cat_values, X_res], axis=1)
         return pd.DataFrame(X_res, columns=X.columns)
 
     def resample(self, X, y, n_samples, categorical=None):
