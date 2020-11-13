@@ -62,8 +62,8 @@ class MLSmote:
         nu = np.random.uniform(0, 1, len(sample_idx)).reshape(-1, 1)
         X_res = convex_comb(X_num[sample_idx], X_num[nbs_idx], 
                             self.arrayb.array(nu))
-        cat_values = np.where(nu < .5, cat_values[sample_idx],
-                              cat_values[nbs_idx])
+        cat_values = np.where(nu < .5, X_cat[sample_idx],
+                              X_cat[nbs_idx])
         cat_values = self.dfb.DataFrame(cat_values.tolist())
         X_res = self.dfb.concatenate([cat_values, X_res], axis=1)
         return pd.DataFrame(X_res, columns=X.columns)
