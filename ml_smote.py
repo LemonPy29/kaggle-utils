@@ -74,7 +74,7 @@ class MLSmote:
         cat_df = self.dfb.DataFrame(cat_values.tolist(), 
                                     columns=cat_cols)
 
-        return self.dfb.concat([cat_values, X_res], axis=1)
+        return self.dfb.concat([cat_df, X_res], axis=1)
 
     def resample(self, X, y, n_samples, categorical=None):
         np.random.seed(self.seed)
