@@ -66,7 +66,6 @@ class MLSmote:
         nu = np.random.uniform(0, 1, len(sample_idx)).reshape(-1, 1)
         X_res = convex_comb(num_values[sample_idx], num_values[nbs_idx], 
                             self.arrayb.array(nu))
-        X_res = self.dfb.DataFrame(X_res)
         cat_values = np.where(nu < .5, cat_values[sample_idx],
                               cat_values[nbs_idx])
 
