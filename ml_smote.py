@@ -87,7 +87,7 @@ class MLSmote:
         X_num = X_masked.drop(categorical, axis=1)
         X_cat = X_masked[categorical]
 
-        idxs = self.nn_wrapper(X_num,values)
+        idxs = self.nn_wrapper(X_num.values)
         sample_idx = np.random.choice(idxs[:, 0], n_samples)
         nbs_idx = np.array(
                 [np.random.choice(idxs[j, 1:]) for j in sample_idx]
@@ -101,4 +101,6 @@ class MLSmote:
             columns=y.columns
             )
 
-        return X_res, y_res
+        return (self.dfb.concat([X, X_res], axis=0, ignore_index=True),
+                self.dfb.concat([y, y_res], axis=0, ignore_index=True))
+
