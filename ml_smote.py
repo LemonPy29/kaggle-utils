@@ -30,7 +30,7 @@ def values(x):
     try:
         return x.values
     except TypeError:
-        return x.values_host
+        return x.to_pandas().values
 
 class MLSmote:
     def __init__(self, *, backend='cuda', seed=123, **nn_args):
