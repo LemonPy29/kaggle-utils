@@ -29,7 +29,7 @@ def as_np_array(fn):
 def values(x):
     try:
         return x.values
-    except TypeError:
+    except:
         return x.to_pandas().values
 
 class MLSmote:
