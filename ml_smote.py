@@ -96,7 +96,7 @@ class MLSmote:
 
         nn_sum = self.nn_sum(y_masked.values, idxs[sample_idx])
         y_res = self.dfb.DataFrame(
-            self.arrayb.where(nn_sum > 2, 1, 0),
+                self.arrayb.where(nn_sum > 0, 1, 0),
             columns=y.columns
             )
 
